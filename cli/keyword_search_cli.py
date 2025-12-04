@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
+from keyword_search import *
+
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -14,7 +18,11 @@ def main() -> None:
     match args.command:
         case "search":
             # print the search query here
+            matches = search(args.query)
             print(f'Searching for: {args.query}')
+            for i, m in enumerate(matches):
+                print(f'{i}. {m["title"]}')
+        
         case _:
             parser.print_help()
 
