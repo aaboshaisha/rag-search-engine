@@ -1,20 +1,22 @@
 from search_utils import load_movies, SEARCH_LIMIT, load_stopwords
 import string
-
-def remove_punc(s:str) -> str:
-    return s.translate(str.maketrans("","",string.punctuation))
+from nltk.stem import PorterStemmer
 
 stopwords = load_stopwords()
-def remove_stopwords(toks:list[str])->list[str]:
-    return [t for t in toks if t not in stopwords]
-
+stemmer = PorterStemmer()
 
 def tokenize(s:str) -> list[str]:
-    toks = [t for t in preprocess(s).split()]
-    return remove_stopwords(toks)
-    
+    """Tokenize. Remove stopwords. Returns word stems"""
+    valid_toks = []
+    for t in preprocess(s).split():
+        if t not in stopwords:
+            valid_toks.append(stemmer.stem(t))
+    return valid_toks
+
 def preprocess(s:str) -> str:
-    return remove_punc(s.lower())
+    """Lowercase and remove punctuation"""
+    s = s.lower()
+    return s.translate(str.maketrans("","",string.punctuation))
 
 # def has_matching_token(qry:str, title:str) -> bool:
 #     """Checks if at least one token from the query matches any part of title"""

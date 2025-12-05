@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 
-
 def get_root(cwd = Path.cwd()):
     if cwd == cwd.parent: # reached root file system
         raise FileNotFoundError("No .git found")
