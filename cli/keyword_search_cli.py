@@ -17,7 +17,6 @@ def main() -> None:
 
     match args.command:
         case "search":
-            # print the search query here
             matches = search(args.query)
             print(f'Searching for: {args.query}')
             for i, m in enumerate(matches):
