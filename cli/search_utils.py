@@ -13,6 +13,7 @@ def get_root(cwd = Path.cwd()):
 PROJECT_ROOT = get_root()
 DATA_PATH = PROJECT_ROOT / 'data/movies.json'
 SEARCH_LIMIT = 5
+STOPWORDS_PATH = PROJECT_ROOT / 'data/stopwords.txt'
 
 
 def load_movies() -> list[dict]:
@@ -20,3 +21,6 @@ def load_movies() -> list[dict]:
         data = json.load(f)
     return data['movies']
     
+def load_stopwords(path=STOPWORDS_PATH):
+    with open(path) as f:
+        return set(f.read().splitlines())

@@ -1,11 +1,17 @@
-from search_utils import load_movies, SEARCH_LIMIT
+from search_utils import load_movies, SEARCH_LIMIT, load_stopwords
 import string
 
 def remove_punc(s:str) -> str:
     return s.translate(str.maketrans("","",string.punctuation))
 
+stopwords = load_stopwords()
+def remove_stopwords(toks:list[str])->list[str]:
+    return [t for t in toks if t not in stopwords]
+
+
 def tokenize(s:str) -> list[str]:
-    return [t for t in preprocess(s).split()]
+    toks = [t for t in preprocess(s).split()]
+    return remove_stopwords(toks)
     
 def preprocess(s:str) -> str:
     return remove_punc(s.lower())
@@ -22,6 +28,7 @@ def has_matching_token(qry_toks:list[str], title_toks:list[str]) -> bool:
             if qt in tt:
                 return True
     return False
+
 
 def search(qry:str, limit=SEARCH_LIMIT) -> list[str]:
     movies = load_movies()
