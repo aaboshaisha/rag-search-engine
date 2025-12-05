@@ -9,6 +9,7 @@ wheels/
 .python-version
 *.ipynb
 cli/explore.ipynb
+.virtual_documents/cli
 
 # Virtual environments
 .venv
