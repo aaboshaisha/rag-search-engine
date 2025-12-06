@@ -11,6 +11,7 @@ def get_root(cwd = Path.cwd()):
 
 SEARCH_LIMIT = 5
 BM25_K1 = 1.5
+BM25_B = 0.75
 
 PROJECT_ROOT = get_root()
 DATA_PATH = PROJECT_ROOT / 'data/movies.json'
@@ -19,6 +20,8 @@ CACHE_DIR = PROJECT_ROOT / 'cache'
 INDEX_PATH = CACHE_DIR / 'index.pkl'
 DOCMAP_PATH = CACHE_DIR / 'docmap.pkl'
 TERMFREQ_PATH = CACHE_DIR / 'term_frequencies.pkl'
+DOC_LENGTHS_PATH = CACHE_DIR/ "doc_lengths.pkl"
+
 
 
 def load_movies() -> list[dict]:
