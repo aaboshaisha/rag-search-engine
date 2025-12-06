@@ -9,11 +9,14 @@ def get_root(cwd = Path.cwd()):
     return get_root(cwd.parent)
 
 
+SEARCH_LIMIT = 5
 PROJECT_ROOT = get_root()
 DATA_PATH = PROJECT_ROOT / 'data/movies.json'
-SEARCH_LIMIT = 5
 STOPWORDS_PATH = PROJECT_ROOT / 'data/stopwords.txt'
 CACHE_DIR = PROJECT_ROOT / 'cache'
+INDEX_PATH = CACHE_DIR / 'index.pkl'
+DOCMAP_PATH = CACHE_DIR / 'docmap.pkl'
+TERMFREQ_PATH = CACHE_DIR / 'term_frequencies.pkl'
 
 
 def load_movies() -> list[dict]:

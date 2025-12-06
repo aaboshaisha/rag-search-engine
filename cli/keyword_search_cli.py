@@ -14,10 +14,12 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     build_parser = subparsers.add_parser("build", help="Build the inverted index and save it to disk.")
+    
+    tf_parser = subparsers.add_parser("tf", help="Print term frequency for a term in document with given id.")
+    tf_parser.add_argument("doc_id", type=int, help="Document Id")
+    tf_parser.add_argument("term", type=str, help="Term")
 
     args = parser.parse_args()
-
-    movies = load_movies()
 
     match args.command:
         case "search":
@@ -30,6 +32,10 @@ def main() -> None:
             print("Building inverted index...")
             build_command()
             print("Inverted index built successfully.")
+
+        case "tf":
+            return tf_command(args.doc_id, args.term)
+            
         case _:
             parser.print_help()
 
