@@ -22,6 +22,10 @@ def main() -> None:
     idf_parser = subparsers.add_parser("idf", help="Calculate IDF for a given term")
     idf_parser.add_argument("term", type=str, help="Term to calculate IDF for")
 
+    tfidf_parser = subparsers.add_parser("tfidf", help="Calculate TF-IDF score for a given document ID and term")
+    tfidf_parser.add_argument("doc_id", type=int, help="Document ID")
+    tfidf_parser.add_argument("term", type=str, help="term to calculate TF-IDF for")
+
     args = parser.parse_args()
 
     match args.command:
@@ -37,10 +41,15 @@ def main() -> None:
             print("Inverted index built successfully.")
 
         case "tf":
-            return tf_command(args.doc_id, args.term)
+            tf = tf_command(args.doc_id, args.term)
+            print(f"Term frequency of '{args.term}' in document '{args.doc_id}': {tf}")
 
         case "idf":
-            print(idf_command(args.term))
+            print(f'{idf_command(args.term)}:.2f')
+
+        case "tfidf":
+            tf_idf = tfidf_command(args.doc_id, args.term)
+            print(f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tf_idf:.2f}")
             
         case _:
             parser.print_help()

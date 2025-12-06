@@ -67,6 +67,16 @@ class InvertedIndex:
             raise ValueError("Cannot search more than one term")
         return counts[toks[0]]
 
+    def get_idf(self, term=str) -> int:
+        total_doc_count = len(self.term_frequencies)
+        tok = tokenize(term)[0]
+        term_match_doc_count = sum(1 for doc_id in self.term_frequencies if tok in self.term_frequencies[doc_id])
+        return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+
+    def get_tfidf(self, doc_id:int, term:str) -> float:
+        tf, idf = self.get_tf(doc_id, term), self.get_idf(term)
+        return tf * idf
+
     def build(self, movies=load_movies()):
         """iterate over all the movies and add them to both the index and the docmap."""
         for m in movies:
@@ -102,16 +112,17 @@ def build_command()->None:
 def tf_command(doc_id:int, term:str)-> None:
     idx = InvertedIndex()
     idx.load()
-    print(idx.get_tf(doc_id, term))
+    return idx.get_tf(doc_id, term)
 
 
 def idf_command(term:str) -> float:
     """Return IDF for given term"""
     idx = InvertedIndex()
     idx.load()
-    
-    total_doc_count = len(idx.term_frequencies)
-    tok = tokenize(term)[0]
-    term_match_doc_count = sum(1 for doc_id in idx.term_frequencies if tok in idx.term_frequencies[doc_id])
-    
-    return round(math.log((total_doc_count + 1) / (term_match_doc_count + 1)), 2)
+    return idx.get_idf(term)
+
+
+def tfidf_command(doc_id, term):
+    idx = InvertedIndex()
+    idx.load()
+    return idx.get_tfidf(doc_id, term)
