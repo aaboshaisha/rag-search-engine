@@ -35,16 +35,20 @@ def has_matching_token(qry_toks:list[str], title_toks:list[str]) -> bool:
 
 
 def search(qry:str, limit=SEARCH_LIMIT) -> list[str]:
-    movies = load_movies()
-    matches = []
-    for m in movies:
-        qry_toks, title_toks = tokenize(qry), tokenize(m['title'])
-        if has_matching_token(qry_toks, title_toks):
-            print(m['title'])
-            matches.append(m)
-            if len(matches) >= limit:
-                break
-    return matches
+    idx = InvertedIndex()
+    idx.load()
+    seen, docs = set(), []
+    
+    for tok in tokenize(qry):
+        ids = idx.get_documents(tok)
+        for i in ids:
+            if i in seen:
+                continue
+            seen.add(i)
+            docs.append(idx.docmap[i])
+            if len(docs) >= limit:
+                return docs
+    return docs
 
 
 class InvertedIndex:
@@ -77,6 +81,16 @@ class InvertedIndex:
                 print(f'Saved at {path}')
         save_to_pickle(self.index, CACHE_DIR/'index.pkl')
         save_to_pickle(self.docmap, CACHE_DIR/'docmap.pkl')
+
+    def load(self):
+        with open(CACHE_DIR/'index.pkl', 'rb') as f:
+            self.index = pickle.load(f)
+            print('Index loaded')
+        
+        with open(CACHE_DIR/'docmap.pkl', 'rb') as f:
+            self.docmap = pickle.load(f)
+            print('Docmap loaded')
+        
 
 
 def build_command():
