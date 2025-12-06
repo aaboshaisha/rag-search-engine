@@ -1,5 +1,5 @@
 from search_utils import *
-import string, pickle
+import string, pickle, math
 from nltk.stem import PorterStemmer
 from collections import defaultdict, Counter
 from pathlib import Path
@@ -87,27 +87,31 @@ class InvertedIndex:
         save_to_pickle(self.term_frequencies, TERMFREQ_PATH)
     
     def load(self):
-        with open(INDEX_PATH, 'rb') as f:
-            self.index = pickle.load(f)
-            print('Index loaded')
-        
-        with open(DOCMAP_PATH, 'rb') as f:
-            self.docmap = pickle.load(f)
-            print('Docmap loaded')
-    
-        with open(TERMFREQ_PATH, 'rb') as f:
-            self.term_frequencies = pickle.load(f)
-            print('Term frequencies loaded')        
+        with open(INDEX_PATH, 'rb') as f: self.index = pickle.load(f)        
+        with open(DOCMAP_PATH, 'rb') as f: self.docmap = pickle.load(f)
+        with open(TERMFREQ_PATH, 'rb') as f: self.term_frequencies = pickle.load(f)
 
 
-def build_command():
+def build_command()->None:
     idx = InvertedIndex()
     idx.build()
     idx.save()
     docs = idx.get_documents('merida')
     print(f"First document for token 'merida' = {docs[0]}") 
 
-def tf_command(doc_id, term):
+def tf_command(doc_id:int, term:str)-> None:
     idx = InvertedIndex()
     idx.load()
     print(idx.get_tf(doc_id, term))
+
+
+def idf_command(term:str) -> float:
+    """Return IDF for given term"""
+    idx = InvertedIndex()
+    idx.load()
+    
+    total_doc_count = len(idx.term_frequencies)
+    tok = tokenize(term)[0]
+    term_match_doc_count = sum(1 for doc_id in idx.term_frequencies if tok in idx.term_frequencies[doc_id])
+    
+    return round(math.log((total_doc_count + 1) / (term_match_doc_count + 1)), 2)

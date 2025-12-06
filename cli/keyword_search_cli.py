@@ -17,7 +17,10 @@ def main() -> None:
     
     tf_parser = subparsers.add_parser("tf", help="Print term frequency for a term in document with given id.")
     tf_parser.add_argument("doc_id", type=int, help="Document Id")
-    tf_parser.add_argument("term", type=str, help="Term")
+    tf_parser.add_argument("term", type=str, help="Term to get frequency for")
+
+    idf_parser = subparsers.add_parser("idf", help="Calculate IDF for a given term")
+    idf_parser.add_argument("term", type=str, help="Term to calculate IDF for")
 
     args = parser.parse_args()
 
@@ -35,6 +38,9 @@ def main() -> None:
 
         case "tf":
             return tf_command(args.doc_id, args.term)
+
+        case "idf":
+            print(idf_command(args.term))
             
         case _:
             parser.print_help()
