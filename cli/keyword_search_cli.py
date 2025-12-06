@@ -13,7 +13,11 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
+    build_parser = subparsers.add_parser("build", help="Build the inverted index and save it to disk.")
+
     args = parser.parse_args()
+
+    movies = load_movies()
 
     match args.command:
         case "search":
@@ -21,7 +25,11 @@ def main() -> None:
             print(f'Searching for: {args.query}')
             for i, m in enumerate(matches):
                 print(f'{i}. {m["title"]}')
-        
+
+        case "build":
+            print("Building inverted index...")
+            build_command()
+            print("Inverted index built successfully.")
         case _:
             parser.print_help()
 

@@ -13,6 +13,7 @@ PROJECT_ROOT = get_root()
 DATA_PATH = PROJECT_ROOT / 'data/movies.json'
 SEARCH_LIMIT = 5
 STOPWORDS_PATH = PROJECT_ROOT / 'data/stopwords.txt'
+CACHE_DIR = PROJECT_ROOT / 'cache'
 
 
 def load_movies() -> list[dict]:

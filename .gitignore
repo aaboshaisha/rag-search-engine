@@ -15,6 +15,7 @@ cli/explore.ipynb
 .venv
 
 /data/
+/cache/
 
 pyproject.toml
 uv.lock
