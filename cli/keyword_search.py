@@ -85,6 +85,11 @@ class InvertedIndex:
         df = len(self.get_documents(toks[0]))
         IDF = math.log((N - df + 0.5) / (df + 0.5) + 1)
         return IDF
+
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+        tf = self.get_tf(doc_id, term)
+        tf_component = (tf * (k1 + 1)) / (tf + k1)
+        return tf_component
     
     def build(self, movies=load_movies()):
         """iterate over all the movies and add them to both the index and the docmap."""
@@ -109,6 +114,7 @@ class InvertedIndex:
         with open(INDEX_PATH, 'rb') as f: self.index = pickle.load(f)        
         with open(DOCMAP_PATH, 'rb') as f: self.docmap = pickle.load(f)
         with open(TERMFREQ_PATH, 'rb') as f: self.term_frequencies = pickle.load(f)
+
 
 def build_command()->None:
     idx = InvertedIndex()
@@ -139,3 +145,8 @@ def bm25idf_command(term:str) -> float:
     idx = InvertedIndex()
     idx.load()
     return idx.get_bm25_idf(term)
+
+def bm25tf_command(doc_id, term):
+    idx = InvertedIndex()
+    idx.load()
+    return idx.get_bm25_tf(doc_id, term)
