@@ -44,7 +44,6 @@ def search(qry:str, limit=SEARCH_LIMIT) -> list[str]:
                 return docs
     return docs
 
-DOC_LENGTHS_PATH = CACHE_DIR/ "doc_lengths.pkl"
 
 class InvertedIndex:
     def __init__(self):
@@ -54,9 +53,10 @@ class InvertedIndex:
         """Tokenize the input text, then add each token to the index with the document ID."""
         toks = tokenize(text)
         self.doc_lengths[doc_id] = len(toks)
+        self.term_frequencies[doc_id] = Counter(toks)
         for tok in toks:
             self.index[tok].add(doc_id)
-            self.term_frequencies[doc_id][tok] += 1 # update term freq for each token
+            
 
     def __get_avg_doc_length(self) -> float:
         """Calculate and return the average document length across all documents"""
@@ -101,11 +101,26 @@ class InvertedIndex:
         avg_doc_length = self.__get_avg_doc_length()
         
         # Length normalization factor
-        length_norm = 1 - b + b * (doc_length / avg_doc_length)
+        if avg_doc_length > 0:
+            length_norm = 1 - b + b * (doc_length / avg_doc_length)
+        else:
+            length_norm = 1
         # Apply to term frequency
         tf_component = (tf * (k1 + 1)) / (tf + k1 * length_norm)
         
         return tf_component
+
+    def bm25(self, doc_id, term):
+        bm25_tf = self.get_bm25_tf(doc_id, term)
+        bm25_idf = self.get_bm25_idf(term)
+        return bm25_tf * bm25_idf
+
+    def bm25_search(self, query, limit):
+        toks, bm25_scores = tokenize(query), dict()
+        for doc_id in self.docmap.keys():
+            bm25_scores[doc_id] = sum(self.bm25(doc_id, tok) for tok in toks)
+        sorted_scores = sorted(bm25_scores.items(), key=lambda x: x[1], reverse=True)
+        return sorted_scores[:limit]
     
     def build(self, movies=load_movies()):
         """iterate over all the movies and add them to both the index and the docmap."""
@@ -132,7 +147,6 @@ class InvertedIndex:
         with open(DOCMAP_PATH, 'rb') as f: self.docmap = pickle.load(f)
         with open(TERMFREQ_PATH, 'rb') as f: self.term_frequencies = pickle.load(f)
         with open(DOC_LENGTHS_PATH, 'rb') as f: self.doc_lengths = pickle.load(f)
-        
 
 def build_command()->None:
     idx = InvertedIndex()
@@ -168,3 +182,10 @@ def bm25tf_command(doc_id, term, b=None):
     idx = InvertedIndex()
     idx.load()
     return idx.get_bm25_tf(doc_id, term)
+
+def bm25search_command(query, limit=5):
+    idx = InvertedIndex()
+    idx.load()
+    matches = idx.bm25_search(query, limit)
+    matches = ((doc_id, score, idx.docmap[doc_id]['title']) for doc_id, score in matches)
+    return matches

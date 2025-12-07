@@ -14,7 +14,7 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     build_parser = subparsers.add_parser("build", help="Build the inverted index and save it to disk.")
-    
+
     tf_parser = subparsers.add_parser("tf", help="Print term frequency for a term in document with given id.")
     tf_parser.add_argument("doc_id", type=int, help="Document Id")
     tf_parser.add_argument("term", type=str, help="Term to get frequency for")
@@ -34,6 +34,10 @@ def main() -> None:
     bm25_tf_parser.add_argument("term", type=str, help="Term to get BM25 TF score for")
     bm25_tf_parser.add_argument("k1", type=float, nargs='?', default=BM25_K1, help="Tunable BM25 K1 parameter")
     bm25_tf_parser.add_argument("b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 b parameter")
+
+    bm25search_parser = subparsers.add_parser("bm25search", help="Search movies using full BM25 scoring")
+    bm25search_parser.add_argument("query", type=str, help="Search query")
+    bm25search_parser.add_argument("limit", type=int, nargs='?', default=SEARCH_LIMIT, help="Optional search limit parameter")
 
     args = parser.parse_args()
 
@@ -67,7 +71,11 @@ def main() -> None:
         case "bm25tf":
             bm25tf = bm25tf_command(args.doc_id, args.term)
             print(f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25tf:.2f}")
-        
+
+        case "bm25search":
+            matches = bm25search_command(args.query, args.limit)
+            for i, (doc_id, score, title) in enumerate(matches):
+                print(f'{i+1}. ({doc_id}) {title} - Score: {score:.2f}') 
         case _:
             parser.print_help()
 
