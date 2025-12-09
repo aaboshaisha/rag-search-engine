@@ -10,6 +10,7 @@ wheels/
 *.ipynb
 cli/explore.ipynb
 .virtual_documents/cli
+.DS_Store
 
 # Virtual environments
 .venv

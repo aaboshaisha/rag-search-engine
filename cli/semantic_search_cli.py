@@ -11,13 +11,19 @@ def main():
     
     embed_text_parser = subparsers.add_parser('embed_text', help='Embed text')
     embed_text_parser.add_argument('text', type=str, help='Text to be embedded')
-    
+
+    verify_embeddings_parser = subparsers.add_parser('verify_embeddings', help='Load or create document embeddings.')
+
+    embedquery_parser = subparsers.add_parser('embedquery', help='Embed query text')
+    embedquery_parser.add_argument('query', type=str, help='Query text to be embedded')
 
     args = parser.parse_args()
     
     match args.command:
         case "verify": return verify_command()
         case 'embed_text': return embed_text(args.text)
+        case 'verify_embeddings': return verify_embeddings()
+        case 'embedquery': return embedquery_command(args.query)
         case _: parser.print_help()
 
 if __name__ == "__main__":
