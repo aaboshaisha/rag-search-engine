@@ -21,6 +21,10 @@ def main():
     search_parser.add_argument('query', type=str, help='Search query string')
     search_parser.add_argument('--limit', type=int, nargs='?', help='Optional search limit paramater')
 
+    chunk_parser = subparsers.add_parser('chunk', help='Split text into n sized chunks')
+    chunk_parser.add_argument('text', type=str, help='Text to be chunked')
+    chunk_parser.add_argument('--chunk-size', type=int, nargs='?', default = 200, help='Optional chunking parameter')
+    
     args = parser.parse_args()
     
     match args.command:
@@ -29,6 +33,7 @@ def main():
         case 'verify_embeddings': return verify_embeddings()
         case 'embedquery': return embedquery_command(args.query)
         case 'search': return search_command(args.query, args.limit)
+        case 'chunk': return chunk_command(args.text, args.chunk_size)
         case _: parser.print_help()
 
 if __name__ == "__main__":

@@ -106,3 +106,17 @@ def search_command(query:str, limit:int=5):
         print(f"{i}. {result['title']} (score: {result['score']:.4f})")
         print(f"   {result['description'][:100]}...")
         print()
+
+def fixed_chunk(text:str, chunk_size:int=DEFAULT_CHUNK_SIZE):
+    words = text.split()
+    i, chunks = 0, []
+    while i < len(words):
+        chunks.append(words[i:i+chunk_size])
+        i += chunk_size
+    return chunks
+
+def chunk_command(text:str, chunk_size:int|None):
+    print(f'Chunking {len(text)} characters')
+    chunks = fixed_chunk(text, chunk_size)
+    for i, chunk in enumerate(chunks):
+        print(f'{i+1}.', ' '.join(chunk))
