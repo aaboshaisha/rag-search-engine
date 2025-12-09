@@ -25,6 +25,12 @@ def main():
     chunk_parser.add_argument('text', type=str, help='Text to be chunked')
     chunk_parser.add_argument('--chunk-size', type=int, nargs='?', default = 200, help='Optional chunking parameter')
     chunk_parser.add_argument('--overlap', type=int, nargs='?', default = 0, help='Optional overlap parameter')
+
+    semantic_chunk_parser = subparsers.add_parser('semantic_chunk', help='Sematically split text into n sized chunks')
+    semantic_chunk_parser.add_argument('text', type=str, help='Text to be chunked')
+    semantic_chunk_parser.add_argument('--max-chunk-size', type=int, nargs='?', default = 4, help='Optional chunking parameter')
+    semantic_chunk_parser.add_argument('--overlap', type=int, nargs='?', default = 0, help='Optional overlap parameter')
+
     
     args = parser.parse_args()
     
@@ -35,6 +41,7 @@ def main():
         case 'embedquery': return embedquery_command(args.query)
         case 'search': return search_command(args.query, args.limit)
         case 'chunk': return chunk_command(args.text, args.chunk_size, args.overlap)
+        case 'semantic_chunk': return semantic_chunk_command(args.text, args.max_chunk_size, args.overlap)
         case _: parser.print_help()
 
 if __name__ == "__main__":

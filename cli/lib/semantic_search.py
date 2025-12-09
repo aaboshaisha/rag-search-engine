@@ -2,6 +2,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from numpy.linalg import norm
 from search_utils import *
+import re
 
 class SemanticSearch:
     def __init__(self):
@@ -122,3 +123,18 @@ def chunk_command(text:str, chunk_size:int|None, overlap:int|None):
     for i, chunk in enumerate(chunks):
         print(f'{i+1}.', ' '.join(chunk))
 
+
+def semantic_chunk(text:str, max_chunk_size:int=MAX_CHUNK_SIZE, overlap:int=0):
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    assert overlap < max_chunk_size, f'Overlap {overlap} must be < Chunk size {max_chunk_size}'
+    i, chunks = 0, []
+    while i < len(sentences) - overlap:
+        chunks.append(sentences[i:i+max_chunk_size])
+        i += max_chunk_size - overlap
+    return chunks
+
+def semantic_chunk_command(text:str, max_chunk_size:int|None, overlap:int|None):
+    print(f'Semantically chunking {len(text)} characters')
+    chunks = semantic_chunk(text, max_chunk_size, overlap)
+    for i, chunk in enumerate(chunks):
+        print(f'{i+1}.', ' '.join(chunk))
