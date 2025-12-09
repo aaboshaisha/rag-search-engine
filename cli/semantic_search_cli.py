@@ -17,6 +17,10 @@ def main():
     embedquery_parser = subparsers.add_parser('embedquery', help='Embed query text')
     embedquery_parser.add_argument('query', type=str, help='Query text to be embedded')
 
+    search_parser = subparsers.add_parser('search', help='Sematic movie search')
+    search_parser.add_argument('query', type=str, help='Search query string')
+    search_parser.add_argument('--limit', type=int, nargs='?', help='Optional search limit paramater')
+
     args = parser.parse_args()
     
     match args.command:
@@ -24,6 +28,7 @@ def main():
         case 'embed_text': return embed_text(args.text)
         case 'verify_embeddings': return verify_embeddings()
         case 'embedquery': return embedquery_command(args.query)
+        case 'search': return search_command(args.query, args.limit)
         case _: parser.print_help()
 
 if __name__ == "__main__":

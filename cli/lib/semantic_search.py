@@ -1,12 +1,13 @@
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from numpy.linalg import norm
 from search_utils import *
 
 class SemanticSearch:
     def __init__(self):
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.embeddings, self.documents, self.document_map = None, None, dict()
-    
+
     def generate_embedding(self, text):
         text = text.strip()
         if not text or not text.strip(): raise ValueError("Text cannot be empty or contain only whitespace!")
@@ -18,7 +19,7 @@ class SemanticSearch:
         for doc in documents:
             self.document_map[doc['id']] = doc
             strs.append(f"{doc['title']}: {doc['description']}")
-        
+
         self.embeddings = self.model.encode(strs, show_progress_bar=True)
         assert self.embeddings.shape == (len(documents), 384)
         np.save(MOVIE_EMBS_PATH, self.embeddings)
@@ -29,12 +30,33 @@ class SemanticSearch:
         self.documents = documents
         for doc in documents:
             self.document_map[doc['id']] = doc
-        
+
         if MOVIE_EMBS_PATH.exists():
             self.embeddings = np.load(MOVIE_EMBS_PATH)
             if self.embeddings.shape[0] == len(documents):
                 return self.embeddings
-        return self.build_embeddings(documents)
+        self.embeddings = self.build_embeddings(documents)
+        return self.embeddings
+
+    def search(self, query, limit):
+        if self.embeddings is None or self.embeddings.size == 0:
+            raise ValueError("No embeddings loaded. Call `load_or_create_embeddings` first.")
+
+        if self.documents is None or len(self.documents) == 0:
+            raise ValueError("No documents loaded. Call `load_or_create_embeddings` first.")
+
+
+        query_emb = self.generate_embedding(query)
+        dot_prods = query_emb @ self.embeddings.T
+    
+        norms_prods = norm(query_emb) * norm(self.embeddings, axis=1) # (5000,) vector
+        sim_scores = dot_prods / norms_prods
+    
+        docs_and_scores = [(doc, score) for doc, score in zip(self.documents, sim_scores)]
+        docs_and_scores.sort(key=lambda x: x[1], reverse=True)
+    
+        results = [{'score':tup[1], 'title':tup[0]['title'], 'description':tup[0]['description']} for tup in docs_and_scores[:limit]]
+        return results
 
 def verify_model():
     ss = SemanticSearch()
@@ -70,3 +92,17 @@ def embed_query_text(query):
 
 def embedquery_command(query:str):
     return embed_query_text(query)
+
+def search_command(query:str, limit:int=5):
+    si = SemanticSearch()
+    _ = si.load_or_create_embeddings(load_movies())
+    results = si.search(query, limit)
+    
+    print(f"Query: {query}")
+    print(f"Top {len(results)} results:")
+    print()
+
+    for i, result in enumerate(results, 1):
+        print(f"{i}. {result['title']} (score: {result['score']:.4f})")
+        print(f"   {result['description'][:100]}...")
+        print()
