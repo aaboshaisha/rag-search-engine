@@ -24,6 +24,7 @@ def main():
     chunk_parser = subparsers.add_parser('chunk', help='Split text into n sized chunks')
     chunk_parser.add_argument('text', type=str, help='Text to be chunked')
     chunk_parser.add_argument('--chunk-size', type=int, nargs='?', default = 200, help='Optional chunking parameter')
+    chunk_parser.add_argument('--overlap', type=int, nargs='?', default = 0, help='Optional overlap parameter')
     
     args = parser.parse_args()
     
@@ -33,7 +34,7 @@ def main():
         case 'verify_embeddings': return verify_embeddings()
         case 'embedquery': return embedquery_command(args.query)
         case 'search': return search_command(args.query, args.limit)
-        case 'chunk': return chunk_command(args.text, args.chunk_size)
+        case 'chunk': return chunk_command(args.text, args.chunk_size, args.overlap)
         case _: parser.print_help()
 
 if __name__ == "__main__":

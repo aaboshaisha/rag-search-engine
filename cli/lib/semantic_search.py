@@ -107,16 +107,18 @@ def search_command(query:str, limit:int=5):
         print(f"   {result['description'][:100]}...")
         print()
 
-def fixed_chunk(text:str, chunk_size:int=DEFAULT_CHUNK_SIZE):
+def fixed_chunk(text:str, chunk_size:int=DEFAULT_CHUNK_SIZE, overlap:int=0):
+    assert overlap < chunk_size, f'Overlap {overlap} must be < Chunk size {chunk_size}'
     words = text.split()
     i, chunks = 0, []
-    while i < len(words):
+    while i < len(words) - overlap:
         chunks.append(words[i:i+chunk_size])
-        i += chunk_size
+        i += chunk_size - overlap
     return chunks
 
-def chunk_command(text:str, chunk_size:int|None):
+def chunk_command(text:str, chunk_size:int|None, overlap:int|None):
     print(f'Chunking {len(text)} characters')
-    chunks = fixed_chunk(text, chunk_size)
+    chunks = fixed_chunk(text, chunk_size, overlap)
     for i, chunk in enumerate(chunks):
         print(f'{i+1}.', ' '.join(chunk))
+
