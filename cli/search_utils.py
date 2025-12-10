@@ -24,7 +24,8 @@ DOCMAP_PATH = CACHE_DIR / 'docmap.pkl'
 TERMFREQ_PATH = CACHE_DIR / 'term_frequencies.pkl'
 DOC_LENGTHS_PATH = CACHE_DIR/ "doc_lengths.pkl"
 MOVIE_EMBS_PATH = CACHE_DIR/"movie_embeddings.npy"
-
+CHUNK_EMBS_PATH = CACHE_DIR/'chunk_embeddings.npy'
+CHUNK_META_PATH = CACHE_DIR/'chunk_metadata.json'
 
 
 def load_movies() -> list[dict]:
