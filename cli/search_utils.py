@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import numpy as np
 
 def get_root(cwd = Path.cwd()):
     if cwd == cwd.parent: # reached root file system
@@ -14,6 +15,7 @@ BM25_K1 = 1.5
 BM25_B = 0.75
 DEFAULT_CHUNK_SIZE = 200
 MAX_CHUNK_SIZE = 4
+SCORE_PRECISION = 8
 
 PROJECT_ROOT = get_root()
 DATA_PATH = PROJECT_ROOT / 'data/movies.json'
@@ -28,6 +30,7 @@ CHUNK_EMBS_PATH = CACHE_DIR/'chunk_embeddings.npy'
 CHUNK_META_PATH = CACHE_DIR/'chunk_metadata.json'
 
 
+
 def load_movies() -> list[dict]:
     with open(get_root() / 'data/movies.json') as f:
         data = json.load(f)
@@ -36,3 +39,7 @@ def load_movies() -> list[dict]:
 def load_stopwords(path=STOPWORDS_PATH):
     with open(path) as f:
         return set(f.read().splitlines())
+
+def cosine_similarity(query_emb:np.ndarray, docs_emb:np.ndarray) -> np.ndarray:
+    """Cosine similarity between query vector embedding and each document vector embedding."""
+    return (query_emb @ docs_emb.T) / (np.linalg.norm(query_emb) * np.linalg.norm(docs_emb, axis=1))

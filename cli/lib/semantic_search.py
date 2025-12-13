@@ -181,8 +181,41 @@ class ChunkedSemanticSearch(SemanticSearch):
                     return self.chunk_embeddings
         return self.build_chunk_embeddings(documents)
 
+    def search_chunks(self, query, limit:int = 10):
+        if self.chunk_embeddings is None or self.chunk_metadata is None:
+            raise ValueError("No chunk embeddings loaded. Call load_or_create_chunk_embeddings first.")
+        query_embedding = self.generate_embedding(query)
+        scores = cosine_similarity(query_embedding, self.chunk_embeddings)
+        
+        chunk_scores = [{'chunk_idx': meta['chunk_idx'], 'movie_idx':meta['movie_idx'], 'score':score} for score, meta in zip(scores, self.chunk_metadata)]
+        
+        idx2score= dict()
+        for d in chunk_scores:
+            idx, score = d['movie_idx'], d['score']
+            if idx not in idx2score or score > idx2score.get(idx, float('-inf')):
+                idx2score[idx] = score
+        
+        sorted_movies = sorted(idx2score.items(), key=lambda x: x[1], reverse=True)
+        
+        results = []
+        for ix, score in sorted_movies[:limit]:
+            doc = self.documents[ix]
+            results.append({"id": doc['id'], "title": doc['title'], "document": doc['description'][:100], "score": round(score, SCORE_PRECISION), "metadata": {}})
+        return results
+
+
 def embed_chunks_command():
     movies = load_movies()
     csi = ChunkedSemanticSearch()
     embeddings = csi.load_or_create_chunk_embeddings(movies)
     print(f"Generated {len(embeddings)} chunked embeddings")
+
+
+def search_chunked_command(query:str, limit:int=5):
+    csi = ChunkedSemanticSearch()
+    _ = csi.load_or_create_chunk_embeddings(load_movies())
+    results = csi.search_chunks(query, limit)
+    for i, res in enumerate(results):
+        TITLE, SCORE, DESCRIPTION = res['title'], res['score'], res['document']
+        print(f"\n{i+1}. {TITLE} (score: {SCORE:.4f})")
+        print(f"   {DESCRIPTION}...")
