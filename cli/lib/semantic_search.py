@@ -124,8 +124,19 @@ def chunk_command(text:str, chunk_size:int|None, overlap:int|None):
         print(f'{i+1}.', ' '.join(chunk))
 
 
-def semantic_chunk(text:str, max_chunk_size:int=4, overlap:int=0):
+def clean(text):
+    text = text.strip()
+    if not text:
+        return []
     sentences = re.split(r"(?<=[.!?])\s+", text)
+    if len(sentences) == 1 and not text.endswith(('.', '!', '?')):
+        return [text]
+    sentences = [s.strip() for s in sentences if s.strip()]
+    return sentences
+    
+
+def semantic_chunk(text:str, max_chunk_size:int=4, overlap:int=0):
+    sentences = clean(text)
     assert overlap < max_chunk_size, f'Overlap {overlap} must be < Chunk size {max_chunk_size}'
     i, chunks = 0, []
     while i < len(sentences) - overlap:
