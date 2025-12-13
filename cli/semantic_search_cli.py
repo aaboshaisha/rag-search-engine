@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.semantic_search import *
+from semantic_search import *
 
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
@@ -35,7 +35,7 @@ def main():
 
     semantic_search_parser = subparsers.add_parser('search_chunked', help='Semantically search')
     semantic_search_parser.add_argument('query', type=str, help='Query text')
-    semantic_search_parser.add_argument('--limit', type=int, nargs='?', help='Optional search limit. Defaults to 5')
+    semantic_search_parser.add_argument('--limit', type=int, nargs='?', default = 5, help='Optional search limit. Defaults to 5')
     
     args = parser.parse_args()
     
