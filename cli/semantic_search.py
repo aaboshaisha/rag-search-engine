@@ -46,11 +46,9 @@ class SemanticSearch:
         if self.documents is None or len(self.documents) == 0:
             raise ValueError("No documents loaded. Call `load_or_create_embeddings` first.")
 
-
         query_emb = self.generate_embedding(query)
         dot_prods = query_emb @ self.embeddings.T
-    
-        norms_prods = norm(query_emb) * norm(self.embeddings, axis=1) # (5000,) vector
+        norms_prods = norm(query_emb) * norm(self.embeddings, axis=1) # (ndim,) vector
         sim_scores = dot_prods / norms_prods
     
         docs_and_scores = [(doc, score) for doc, score in zip(self.documents, sim_scores)]
