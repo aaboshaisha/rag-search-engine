@@ -21,8 +21,8 @@ class HybridSearch:
         ss = self.semantic_search.search_chunks(query, 500 * limit)
         semantic_results = [(r['id'], r['score']) for r in ss] # get the results in the same format
         
-        keyword_results = normalize_results(keyword_results)
-        semantic_results = normalize_results(semantic_results)
+        keyword_results = normalize_list(keyword_results)
+        semantic_results = normalize_list(semantic_results)
         
         common_ids = set(doc_id for doc_id, _ in keyword_results) & set(doc_id for doc_id, _ in semantic_results)
         docmap_cache = {doc_id: self.semantic_search.docmap[doc_id] for doc_id in common_ids}
@@ -42,7 +42,26 @@ class HybridSearch:
         return sorted_results
 
     def rrf_search(self, query, k, limit=10):
-        raise NotImplementedError("RRF hybrid search is not implemented yet.")
+        keyword_results = self._bm25_search(query, 500 * limit)
+        ss = self.semantic_search.search_chunks(query, 500 * limit)
+        semantic_results = [(r['id'], r['score']) for r in ss] # get the results in the same format
+        
+        keyword_ids = [doc_id for doc_id, _ in keyword_results]
+        semantic_ids = [doc_id for doc_id, _ in semantic_results]
+        all_ids = set(keyword_ids) | set(semantic_ids)
+        
+        docmap_cache = {doc_id: {'document':self.semantic_search.docmap[doc_id]} for doc_id in all_ids} 
+        
+        combined_scores = dict()
+        for doc_id in all_ids:
+            document = docmap_cache[doc_id]
+            keyword_rank, semantic_rank = get_rank(doc_id, keyword_ids), get_rank(doc_id, semantic_ids)
+            rrf = combined_rrf(keyword_rank, semantic_rank, k)
+            combined_scores[doc_id] = {'document': document['document'], 'keyword_rank': keyword_rank, 'semantic_rank': semantic_rank, 'rrf': rrf}
+        
+        sorted_results = sorted(combined_scores.values(), key=lambda x: x['rrf'], reverse=True)
+        return sorted_results[:limit]
+
 
 def normalize(scores:list[float])->list[float]:
     min_score, max_score = min(scores), max(scores)
@@ -75,3 +94,28 @@ def weighted_search_command(query, alpha=0.5, limit=5):
         print(f'Hybrid Score: {r["hybrid_score"]:.4f}')
         print(f'BM25: {r["keyword_score"]:.4f}, Semantic: {r["semantic_score"]:.4f}')
         print(r['document']['description'][:100])
+
+
+def rrf_score(rank, k=60):
+    return 1 / (k + rank)
+
+def get_rank(item, lst):
+    return lst.index(item) if item in lst else None
+
+def combined_rrf(keyword_rank, semantic_rank, k=60):
+    rrf_k = rrf_score(keyword_rank, k) if keyword_rank else 0.0
+    rrf_s = rrf_score(semantic_rank, k) if semantic_rank else 0.0
+    return rrf_k + rrf_s
+
+def format_results(results):
+    for i, r in enumerate(results, 1):
+        print(f"{i}. {r['document']['title']}")
+        print(f'RRF Score: {r["rrf"]:.4f}')
+        print(f'BM25 Rank: {r["keyword_rank"]}, Semantic Rank: {r["semantic_rank"]}')
+        print(r['document']['description'][:100])
+        print('\n')
+
+def rrf_search_command(query, k, limit):
+    si = HybridSearch(load_movies())
+    results = si.rrf_search(query, k, limit)
+    format_results(results)
